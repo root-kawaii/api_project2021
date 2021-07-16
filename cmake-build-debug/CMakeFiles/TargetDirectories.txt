@@ -1,0 +1,3 @@
+/home/daemonex/Desktop/exams/api_project/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/daemonex/Desktop/exams/api_project/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/daemonex/Desktop/exams/api_project/cmake-build-debug/CMakeFiles/api_project.dir

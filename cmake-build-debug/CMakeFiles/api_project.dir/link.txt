@@ -1,0 +1,1 @@
+/usr/bin/cc -g CMakeFiles/api_project.dir/main.c.o -o api_project 
