@@ -11,4 +11,8 @@ stdio.h
 -
 malloc.h
 -
+math.h
+-
+string.h
+-
 
