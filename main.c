@@ -52,5 +52,7 @@ char *parser(char *stream){
         stream[i];
         i++;
     }
-    while()
+    while(){
+
+    }
 }
