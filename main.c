@@ -18,12 +18,16 @@ int main() {
     parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * 2);
     parsedInt[0]=0;
     parsedInt[1]=0;
+    int graphCount=0;
 
     while (1){
 
     char *streamS = inputString(1); // read d and k or instructions
     unsigned long *dK;
     dK = parser(streamS, value, parsedInt);
+    //list of best graphs
+    unsigned long *list;
+    parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
 
     if (strncmp(streamS,"A",1)!=0 && strncmp(streamS,"T",1)!=0) {
         //should remove this as it never enters this one
@@ -51,8 +55,25 @@ int main() {
             free(numbers);
         }
         //apply dijsktra algorithm
-        dijkstra(arr,parsedInt[0]);
+        unsigned long value;
+        value=dijkstra(arr,parsedInt[0]);
         free(arr);
+        //memorize first k graphs with their score
+        if(graphCount<parsedInt[1]){
+            *(list+graphCount)=graphCount;
+            *(list+graphCount+parsedInt[1])=value;
+        }
+        //replace if better score (if even leave oldest)
+        else{
+            int II;
+            for(II=0;II<parsedInt[1];II++){
+                if(*(list+II)>value){
+                    *(list+II)=graphCount;
+                    *(list+II+parsedInt[1])=value;
+                }
+            }
+        }
+        graphCount++;
     } else if (strcmp(streamS, "TopK\n")==0) {
 
         //do stuff
@@ -61,6 +82,7 @@ int main() {
         printf("%lu\n",dK[0]);
         printf("%lu\n",dK[1]);
         free(streamS);
+        free(list);
 }
     free(parsedInt);
     return 0;
@@ -202,4 +224,7 @@ unsigned long dijkstra(unsigned long *graph,int nodeNumber){
         closedCount++;
     }
     //printf("bro %lu",min);
+    free(costs);
+    free(nodeCache);
+    return 0;
 }
