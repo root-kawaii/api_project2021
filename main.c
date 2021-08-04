@@ -23,25 +23,26 @@ int main() {
     while (1){
 
     char *streamS = inputString(1); // read d and k or instructions
-    unsigned long *dK;
-    dK = parser(streamS, value, parsedInt);
+    parser(streamS, value, parsedInt);
     //list of best graphs
     unsigned long *list;
-    parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
+    list = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
 
     if (strncmp(streamS,"A",1)!=0 && strncmp(streamS,"T",1)!=0) {
         //should remove this as it never enters this one
     }
     if (strcmp(streamS,"AggiungiGrafo\n")==0) {
         //allocates memory for adjacency matrix
-        unsigned long *arr = (unsigned long *)malloc(parsedInt[0] *parsedInt[0]* sizeof(unsigned long));
+        unsigned long *arr;
+        arr = (unsigned long *)malloc(parsedInt[0] *parsedInt[0]* sizeof(unsigned long));
         int i, j,k,y,w;
         for(k=0;k<parsedInt[0];k++){
             //allocates memory for a row of numbers
-            unsigned long *numbers = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[0]);
+            unsigned long *numbers;
+            numbers = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[0]);
             //initialize to 0
             for(w=0;w<parsedInt[0];w++){
-                numbers[w]=0;
+                *(numbers+w)=0;
             }
             //reads input and parse
             char *streamS = inputString(parsedInt[0]);
@@ -50,13 +51,14 @@ int main() {
             //copy parsed values in matrix
             for(y=0;y<parsedInt[0];y++){
                 *(arr+k*parsedInt[0]+y)=numbers[y];
-                printf("%lu\n",numbers[y]);
+                printf("\n%lu\n",numbers[y]);
             }
             free(numbers);
         }
         //apply dijsktra algorithm
         unsigned long value;
         value=dijkstra(arr,parsedInt[0]);
+        printf("\n%d",value);
         free(arr);
         //memorize first k graphs with their score
         if(graphCount<parsedInt[1]){
@@ -79,8 +81,8 @@ int main() {
         //do stuff
         break;
     }
-        printf("%lu\n",dK[0]);
-        printf("%lu\n",dK[1]);
+
+        printf("brrr\n");
         free(streamS);
         free(list);
 }
@@ -117,7 +119,7 @@ unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnVal
                 //done reading parse last number
                 for(k=0;k<lengthNum;k++){
                     returnValues[numOfReturn]+=value[k]*power(10,lengthNum-k-1);
-                    printf("%lu", returnValues[numOfReturn]);
+                    printf("\n%lu\n", returnValues[numOfReturn]);
                 }
                 lengthNum=0;
                 numOfReturn++;
@@ -197,34 +199,56 @@ unsigned long dijkstra(unsigned long *graph,int nodeNumber){
     unsigned long row=0;
     unsigned long closedCount=0;
     unsigned long column;
-    unsigned long min=10;
+    unsigned long min=4294967295;
     unsigned long *costs = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
     unsigned long *nodeCache = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
 
     while(closedCount<nodeNumber){
         //while not finished...
         for(I=0;I<nodeNumber;I++){
-            //iterates over row and chooses the closest node while updating paths
-            if(min>*(graph+row*nodeNumber+I)){
-                min=*(graph+I);
-                sum+=min;
-                *(nodeCache+closedCount) = I;
-                //update when finds closer
-            }
-            if(closedCount==0)*(costs+I)=*(graph+I);//Initialize costs
-            else{ //Update costs if shorter paths are found (0 counts as infinite, so always update when 0)
-                if(*(graph+row*nodeNumber+I)!=0 && *(costs+I)> (sum + *(graph+row*nodeNumber+I))){
-                    *(costs+I)=sum+*(graph+row*nodeNumber+I);
+            printf("\nrow %lu\n",row);
+            if(row==I){
+                if(closedCount==0)*(costs+I)=*(graph+I);//Initialize costs
+                else{ //Update costs if shorter paths are found (0 counts as infinite, so always update when 0)
+                    if(*(graph+row*nodeNumber+I)!=0 && *(costs+I)> (sum + *(graph+row*nodeNumber+I))){
+                        *(costs+I)=sum+*(graph+row*nodeNumber+I);
+                    }
+                    else if(*(graph+row*nodeNumber+I)==0) *(costs+I)=sum+*(graph+row*nodeNumber+I);
                 }
-                else if(*(graph+row*nodeNumber+I)!=0) *(costs+I)=sum+*(graph+row*nodeNumber+I);
             }
+            else{
+                //iterates over row and chooses the closest node while updating paths
+                if(min>*(graph+row*nodeNumber+I)){
+                    min=*(graph+row*nodeNumber+I);
+                    *(nodeCache+closedCount) = I;
+                    //update when finds closer
+                }
+                if(closedCount==0)*(costs+I)=*(graph+I);//Initialize costs
+                else{ //Update costs if shorter paths are found (0 counts as infinite, so always update when 0)
+                    if(*(graph+row*nodeNumber+I)!=0 && *(costs+I)> (sum + *(graph+row*nodeNumber+I))){
+                        *(costs+I)=sum+*(graph+row*nodeNumber+I);
+                    }
+                    else if(*(graph+row*nodeNumber+I)==0) *(costs+I)=sum+*(graph+row*nodeNumber+I);
+                }
+            }
+            printf("min %lu\n",min);
+            printf("bh %lu\n",*(costs+I));
         }
-        //save node and update row when current row is finished
-        row = *(nodeCache+closedCount);
-        closedCount++;
+            //min=100000;
+            //save node and update row when current row is finished
+            row = *(nodeCache+closedCount);
+            closedCount++;
+            if(closedCount<nodeNumber) sum+=min;
+            min=4294967295;
     }
     //printf("bro %lu",min);
+    unsigned long result;
+    int III=0;
+    result=0;
+    for(III=0;III<nodeNumber;III++){
+        result+=*(costs+III);
+    }
     free(costs);
     free(nodeCache);
-    return 0;
+    return result;
 }
