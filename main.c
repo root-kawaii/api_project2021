@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <string.h>
 
+
 //#define CUR_MAX 4294967295
 
 //char *inputChar();
@@ -18,16 +19,23 @@ int main() {
     parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * 2);
     parsedInt[0]=0;
     parsedInt[1]=0;
-    int graphCount=0;
+    unsigned long graphCount=0;
+    int parsed=0;
 
     while (1){
 
-    char *streamS = inputString(1); // read d and k or instructions
-    parser(streamS, value, parsedInt);
+    char *streamS = inputString(1);
+    unsigned long *list;// read d and k or instructions
+    if(parsed==0){
+        parser(streamS, value, parsedInt);
+        list = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
+        int V;
+        for(V=0;V<parsedInt[1]*2;V++){
+            *(list+V)=0;
+        }
+        parsed=1;
+    }
     //list of best graphs
-    unsigned long *list;
-    list = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
-
     if (strncmp(streamS,"A",1)!=0 && strncmp(streamS,"T",1)!=0) {
         //should remove this as it never enters this one
     }
@@ -58,42 +66,56 @@ int main() {
         //apply dijsktra algorithm
         unsigned long value;
         value=dijkstra(arr,parsedInt[0]);
-        printf("\n%d",value);
+        printf("\n%lu",value);
         free(arr);
         //memorize first k graphs with their score
         if(graphCount<parsedInt[1]){
             *(list+graphCount)=graphCount;
+            printf("\nGRAPH COUNT %lu",*(list+graphCount));
             *(list+graphCount+parsedInt[1])=value;
         }
         //replace if better score (if even leave oldest)
         else{
             int II;
             for(II=0;II<parsedInt[1];II++){
-                if(*(list+II)>value){
+                printf("\nGRAPH COUNTU %lu",*(list+II));
+                if(*(list+II+parsedInt[1])>value){
                     *(list+II)=graphCount;
+                    printf("\nGRAPH COUNTU2 %lu",*(list+II));
                     *(list+II+parsedInt[1])=value;
+                    break;
                 }
             }
         }
+        printf("xxx");
         graphCount++;
+        printf("\n%lu",graphCount);
     } else if (strcmp(streamS, "TopK\n")==0) {
-
+        printf("xxx\n");
+        int IV;
+        for(IV=0;IV<parsedInt[1];IV++){
+            printf("%lu\n",*(list+IV));
+        }
         //do stuff
+        free(list);
         break;
     }
 
         printf("brrr\n");
         free(streamS);
-        free(list);
+        printf("brrr\n");
+
 }
+    printf("brrr\n");
     free(parsedInt);
+    printf("zzzz\n");
     return 0;
 }
 
 char *inputString(int multiply){
     char *buffer;
-    buffer = (char*) malloc(sizeof(char)+(sizeof(unsigned long) * 2*multiply)); // allocate buffer.
-    fgets(buffer,sizeof(char)+(sizeof(unsigned long) * 2),stdin);
+    buffer = (char*) malloc((sizeof(unsigned long) * 3*multiply)); // allocate buffer.
+    fgets(buffer,(sizeof(unsigned long) * 3*multiply),stdin);
     return buffer;
 }
 
@@ -119,7 +141,7 @@ unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnVal
                 //done reading parse last number
                 for(k=0;k<lengthNum;k++){
                     returnValues[numOfReturn]+=value[k]*power(10,lengthNum-k-1);
-                    printf("\n%lu\n", returnValues[numOfReturn]);
+                    //printf("\n%lu\n", returnValues[numOfReturn]);
                 }
                 lengthNum=0;
                 numOfReturn++;
@@ -132,7 +154,14 @@ unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnVal
                 }
                 lengthNum=0;
                 numOfReturn++;
-
+                break;
+            case ' ':
+                    //parse last read number
+                for(k=0;k<lengthNum;k++){
+                    returnValues[numOfReturn]+=value[k]*power(10,lengthNum-k-1);
+                }
+                lengthNum=0;
+                numOfReturn++;
                 break;
             case '1':
                 value[lengthNum]=1;
