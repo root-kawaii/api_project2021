@@ -2,14 +2,22 @@
 #include <malloc.h>
 #include <string.h>
 
+typedef struct{
+    unsigned long id;
+    unsigned long value;
+}graphy;
 
 //#define CUR_MAX 4294967295
 
 //char *inputChar();
-char *inputString();
+//char *inputString();
 unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnValues);
 unsigned long power(unsigned long base,unsigned long esp);
-unsigned long dijkstra(unsigned long *graph,int nodeNumber);
+unsigned long dijkstra(unsigned long *graph,int nodeNumber,unsigned long costs[],unsigned long nodeCache[]);
+void maxheapify(graphy A[],int length,int position);
+void deleteMax(graphy A[],int length);
+void insert(graphy A[],int length,unsigned long value,unsigned long id);
+void buildMaxheapify(graphy A[],int length);
 
 int main() {
     //initialize values for parsing and d,k parameters
@@ -25,108 +33,113 @@ int main() {
     value[8]=0;
     value[9]=0;
     value[10]=0;
-    unsigned long *parsedInt;
-    parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * 2);
+    unsigned long parsedInt[2];
+    //parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * 2);
     parsedInt[0]=0;
     parsedInt[1]=0;
     unsigned long graphCount=0;
-    int parsed=0;
-    char *streamS=NULL;
-    unsigned long *list;
-    unsigned long *arr;
-    unsigned long *numbers;
+    char streamS[30];
+    char *stream=NULL;
+    fgets(streamS,(sizeof(char) * 30),stdin);
+    parser(streamS, value, parsedInt);
+    //free(streamS);
+    graphy list[parsedInt[1]];
+    list[0].id=-1;
+    list[0].value=-1;
+    //int V;
+    //for(V=0;V<parsedInt[1];V++){
+    //    list[V].id=-1;
+    //    list[V].value=-1;
+    //}
+    //buildMaxheapify(list,1);
+    stream = (char*) malloc((sizeof(unsigned long) * 3*parsedInt[0]));
+    char input[20];
+    unsigned long arr[parsedInt[0]*parsedInt[0]];
+    //arr = (unsigned long *)malloc(parsedInt[0] *parsedInt[0]* sizeof(unsigned long));
+    unsigned long numbers[parsedInt[0]];
+    //numbers = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[0]);
+    unsigned long costs[parsedInt[0]];
+    unsigned long nodeCache[parsedInt[0]];
 
-
-    while (1){
-
-    streamS = (char*) malloc((sizeof(unsigned long) * 3*1));
-    if(fgets(streamS,(sizeof(unsigned long) * 3*1),stdin)==NULL || ferror( stdin ) || feof( stdin )){
-        printf("bruh");
-        break;//returning=1;
-    }
-    // read d and k or instructions
-    if(parsed==0){
-        parser(streamS, value, parsedInt);
-        list = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
-        int V;
-        for(V=0;V<parsedInt[1]*2;V++){
-            *(list+V)=-1;
-        }
-        parsed=1;
-    }
-    //list of best graphs
-    if (strncmp(streamS,"A",1)!=0 && strncmp(streamS,"T",1)!=0 && strncmp(streamS,"B",1)!=0) {
-        free(streamS);
-        //should remove ??
-    }
-    else if(strncmp(streamS,"AggiungiGrafo\n",2)==0) {
-        free(streamS);
-        //allocates memory for adjacency matrix
-        arr = (unsigned long *)malloc(parsedInt[0] *parsedInt[0]* sizeof(unsigned long));
-        int k,y,w;
-        for(k=0;k<parsedInt[0];k++){
-            //allocates memory for a row of numbers
-            numbers = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[0]);
-            //initialize to 0
-            for(w=0;w<parsedInt[0];w++){
-                *(numbers+w)=0;
-            }
-            //reads input and parse
+    while (fgets(input, (sizeof(char) * 20), stdin) != NULL){
+        //streamS = fgets(streamS,(sizeof(unsigned long) * 3*1),stdin);
+        //list of best graphs
+        if (strncmp(input,"A",1)!=0 && strncmp(input,"T",1)!=0 && strncmp(input,"B",1)!=0) {
             //free(streamS);
-            streamS = (char*) malloc((sizeof(unsigned long) * 3*parsedInt[1]));
-            streamS = fgets(streamS,(sizeof(unsigned long) * 3*parsedInt[1]),stdin);//inputString(parsedInt[0]);
-            parser(streamS,value,numbers);
-            free(streamS);
-            //copy parsed values in matrix
-            for(y=0;y<parsedInt[0];y++){
-                *(arr+k*parsedInt[0]+y)=numbers[y];
+            //should remove ??
+        }
+        else if(strncmp(input,"AggiungiGrafo\n",2)==0) {
+            //free(streamS);
+            //allocates memory for adjacency matrix
+            int k,y,w;
+            for(k=0;k<parsedInt[0];k++){
+                //allocates memory for a row of numbers
+
+                //initialize to 0
+                for(w=0;w<parsedInt[0];w++){
+                    numbers[w]=0;
+                }
+                //reads input and parse
+                //free(streamS);
+                stream = fgets(stream,(sizeof(unsigned long) * 3*parsedInt[0]),stdin);//inputString(parsedInt[0]);
+                parser(stream,value,numbers);
+                //copy parsed values in matrix
+                for(y=0;y<parsedInt[0];y++){
+                    arr[k*parsedInt[0]+y]=numbers[y];
+                }
+                //free(numbers);
             }
-            free(numbers);
-        }
-        //apply dijsktra algorithm
-        unsigned long value;
-        value=dijkstra(arr,parsedInt[0]);
-        free(arr);
-        //memorize first k graphs with their score
-        if(graphCount<parsedInt[1]){
-            *(list+graphCount)=graphCount;
-            *(list+graphCount+parsedInt[1])=value;
-        }
-        //replace if better score (if even leave oldest)
-        else{
-            int II;
-            unsigned long MAX=0;
-            int position=0;
-            for(II=0;II<parsedInt[1];II++){
-                if(*(list+II+parsedInt[1])>MAX){
-                    MAX=*(list+II+parsedInt[1]);
-                    position=II;
+            //apply dijsktra algorithm
+            unsigned long valueD;
+            valueD=dijkstra(arr,parsedInt[0],costs,nodeCache);
+            //memorize first k graphs with their score
+            int done=0;
+            if(graphCount<parsedInt[1]){
+                list[graphCount].value=valueD;
+                list[graphCount].id=graphCount;
+                //insert(list,graphCount,valueD,graphCount);
+            }
+            //replace if better score (if even leave oldest)
+            else{
+                if(done==0){
+                    buildMaxheapify(list,(int)parsedInt[1]);
+                    done=1;
+                }
+                if(valueD<list[0].value){
+                    deleteMax(list,(int)parsedInt[1]);
+                    insert(list,(int)parsedInt[1],valueD,graphCount);
                 }
             }
-            if(MAX>value){
-                *(list+position)=graphCount;
-                *(list+position+parsedInt[1])=value;
+            graphCount++;
+        } else if (strncmp(input, "TopK\n",2)==0) {
+            //free(streamS);
+            int IV;
+            int checks,tree=0;
+            if(graphCount<parsedInt[1])checks = graphCount;
+            else checks =parsedInt[1];
+            for(IV=0;IV<checks;IV++){
+                    if(list[IV].value!=-1)printf("%lu ",list[IV].id);
+
             }
+            printf("\n");
+            //IV++;
+            //if(*(list+IV)!=-1)printf("%lu\n",*(list+IV));
+            //do stuff
+
         }
-        graphCount++;
-    } else if (strncmp(streamS, "TopK\n",2)==0) {
-        free(streamS);
-        int IV;
-        for(IV=0;IV<parsedInt[1];IV++){
-            if(*(list+IV)!=-1)printf("\n%lu\n",*(list+IV));
-        }
-        //do stuff
+        //if(returning==1){
+            //free(streamS);
+            //free(list);
+            //free(parsedInt);
+            //return 0;
 
     }
-    //if(returning==1){
-        //free(streamS);
-        //free(list);
-        //free(parsedInt);
-        //return 0;
-
-}
-    free(list);
-    free(parsedInt);
+    //free(list);
+    //free(parsedInt);
+    free(stream);
+    //free(streamS);
+    //free(input);
+    //free(arr);
     return 0;
 }
 
@@ -228,14 +241,14 @@ unsigned long power(unsigned long base,unsigned long esp){
     return value;
 }
 
-unsigned long dijkstra(unsigned long *graph,int nodeNumber){
+unsigned long dijkstra(unsigned long *graph,int nodeNumber,unsigned long costs[],unsigned long nodeCache[]){
     int I;
     unsigned long sum=0;
     unsigned long row=0;
     unsigned long closedCount=0;
     unsigned long min=4294967295;
-    unsigned long *costs = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
-    unsigned long *nodeCache = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
+    //unsigned long *costs = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
+    //unsigned long *nodeCache = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
 
     while(closedCount<nodeNumber){
         //while not finished...
@@ -279,7 +292,71 @@ unsigned long dijkstra(unsigned long *graph,int nodeNumber){
     for(III=0;III<nodeNumber;III++){
         result+=*(costs+III);
     }
-    free(costs);
-    free(nodeCache);
+    //free(costs);
+    //free(nodeCache);
     return result;
 }
+
+void buildMaxheapify(graphy A[],int length){
+    int I;
+    for(I=length/2;I>0;I--){
+        maxheapify(A,I,length);
+    }
+}
+
+void maxheapify(graphy A[],int position,int length){
+    int I=position;
+    graphy dummy;
+    int left,right,posmax;
+    left=(2*I)+1;
+    if(left>length-1)left=length-1;
+    right=(2*I)+2;
+    if(right>length-1)right=length-1;
+    if((left<=length) && (A[left].value > A[position].value)){
+        posmax=left;
+    }
+    else posmax=right;
+    if((right<=length) && (A[right].value > A[posmax].value)){
+        posmax=right;
+    }
+    if(posmax!=position){
+        dummy.value=A[position].value;
+        dummy.id=A[position].id;
+        A[position].value = A[posmax].value;
+        A[position].id = A[posmax].id;
+        A[posmax].value = dummy.value;
+        A[posmax].id = dummy.id;
+        maxheapify(A,posmax,length);
+    }
+}
+
+void deleteMax(graphy A[],int length){
+    int I,max;
+    if(length<1);
+    max=A[0].value;
+    A[0].value=A[length].value;
+    A[0].id=A[length].id;
+    A[length].value=A[length-1].value;
+    A[length].id=A[length-1].id;
+    maxheapify(A,0,length);
+}
+
+void insert(graphy A[],int length,unsigned long value,unsigned long id){
+    int I,max;
+    graphy dummy;
+    A[length].value=A[length+1].value;
+    A[length].id=A[length+1].id;
+    A[length].value = value;
+    A[length].id = id;
+    I = length;
+    while(I>0 && (A[(I-1)/2].value < A[I].value)){
+        dummy.value=A[(I-1)/2].value;
+        dummy.id=A[(I-1)/2].id;
+        A[(I-1)/2].value = A[I].value;
+        A[(I-1)/2].id = A[I].id;
+        A[I].value = dummy.value;
+        A[I].id = dummy.id;
+        I = (I-1)/2;
+    }
+}
+
