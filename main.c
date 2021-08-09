@@ -95,12 +95,17 @@ int main() {
         //replace if better score (if even leave oldest)
         else{
             int II;
+            unsigned long MAX=0;
+            int position=0;
             for(II=0;II<parsedInt[1];II++){
-                if(*(list+II+parsedInt[1])>value){
-                    *(list+II)=graphCount;
-                    *(list+II+parsedInt[1])=value;
-                    break;
+                if(*(list+II+parsedInt[1])>MAX){
+                    MAX=*(list+II+parsedInt[1]);
+                    position=II;
                 }
+            }
+            if(MAX>value){
+                *(list+position)=graphCount;
+                *(list+position+parsedInt[1])=value;
             }
         }
         graphCount++;
