@@ -14,115 +14,6 @@ unsigned long dijkstra(unsigned long *graph,int nodeNumber);
 int main() {
     //initialize values for parsing and d,k parameters
     unsigned long value[11];
-    value[0] = -1;
-    unsigned long *parsedInt;
-    parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * 2);
-    parsedInt[0]=0;
-    parsedInt[1]=0;
-    unsigned long graphCount=0;
-    int parsed=0;
-
-    while (1){
-
-    char *streamS = inputString(1);
-    unsigned long *list;// read d and k or instructions
-    if(parsed==0){
-        parser(streamS, value, parsedInt);
-        list = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
-        int V;
-        for(V=0;V<parsedInt[1]*2;V++){
-            *(list+V)=0;
-        }
-        parsed=1;
-    }
-    //list of best graphs
-    if (strncmp(streamS,"A",1)!=0 && strncmp(streamS,"T",1)!=0) {
-        //should remove this as it never enters this one
-    }
-    if (strcmp(streamS,"AggiungiGrafo\n")==0) {
-        //allocates memory for adjacency matrix
-        unsigned long *arr;
-        arr = (unsigned long *)malloc(parsedInt[0] *parsedInt[0]* sizeof(unsigned long));
-        int i, j,k,y,w;
-        for(k=0;k<parsedInt[0];k++){
-            //allocates memory for a row of numbers
-            unsigned long *numbers;
-            numbers = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[0]);
-            //initialize to 0
-            for(w=0;w<parsedInt[0];w++){
-                *(numbers+w)=0;
-            }
-            //reads input and parse
-            char *streamS = inputString(parsedInt[0]);
-            parser(streamS,value,numbers);
-            free(streamS);
-            //copy parsed values in matrix
-            for(y=0;y<parsedInt[0];y++){
-                *(arr+k*parsedInt[0]+y)=numbers[y];
-                printf("\n%lu\n",numbers[y]);
-            }
-            free(numbers);
-        }
-        //apply dijsktra algorithm
-        unsigned long value;
-        value=dijkstra(arr,parsedInt[0]);
-        printf("\n%lu",value);
-        free(arr);
-        //memorize first k graphs with their score
-        if(graphCount<parsedInt[1]){
-            *(list+graphCount)=graphCount;
-            printf("\nGRAPH COUNT %lu",*(list+graphCount));
-            *(list+graphCount+parsedInt[1])=value;
-        }
-        //replace if better score (if even leave oldest)
-        else{
-            int II;
-            for(II=0;II<parsedInt[1];II++){
-                printf("\nGRAPH COUNTU %lu",*(list+II));
-                if(*(list+II+parsedInt[1])>value){
-                    *(list+II)=graphCount;
-                    printf("\nGRAPH COUNTU2 %lu",*(list+II));
-                    *(list+II+parsedInt[1])=value;
-                    break;
-                }
-            }
-        }
-        printf("xxx");
-        graphCount++;
-        printf("\n%lu",graphCount);
-    } else if (strcmp(streamS, "TopK\n")==0) {
-        printf("xxx\n");
-        int IV;
-        for(IV=0;IV<parsedInt[1];IV++){
-            printf("%lu\n",*(list+IV));
-        }
-        //do stuff
-        free(list);
-        break;
-    }
-
-        printf("brrr\n");
-        free(streamS);
-        printf("brrr\n");
-
-}
-    printf("brrr\n");
-    free(parsedInt);
-    printf("zzzz\n");
-    return 0;
-}
-
-char *inputString(int multiply){
-    char *buffer;
-    buffer = (char*) malloc((sizeof(unsigned long) * 3*multiply)); // allocate buffer.
-    fgets(buffer,(sizeof(unsigned long) * 3*multiply),stdin);
-    return buffer;
-}
-
-unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnValues){
-    //reads char, assemble number
-    int inCount=0,lengthNum=0,k,numOfReturn=0;
-    //initializes value for parsing
     value[0]=0;
     value[1]=0;
     value[2]=0;
@@ -134,7 +25,117 @@ unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnVal
     value[8]=0;
     value[9]=0;
     value[10]=0;
-    value[11]=0;
+    unsigned long *parsedInt;
+    parsedInt = (unsigned long*) malloc(sizeof(unsigned long) * 2);
+    parsedInt[0]=0;
+    parsedInt[1]=0;
+    unsigned long graphCount=0;
+    int parsed=0;
+    char *streamS=NULL;
+    unsigned long *list;
+    unsigned long *arr;
+    unsigned long *numbers;
+
+
+    while (1){
+
+    streamS = (char*) malloc((sizeof(unsigned long) * 3*1));
+    if(fgets(streamS,(sizeof(unsigned long) * 3*1),stdin)==NULL || ferror( stdin ) || feof( stdin )){
+        printf("bruh");
+        break;//returning=1;
+    }
+    // read d and k or instructions
+    if(parsed==0){
+        parser(streamS, value, parsedInt);
+        list = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[1]*2);
+        int V;
+        for(V=0;V<parsedInt[1]*2;V++){
+            *(list+V)=-1;
+        }
+        parsed=1;
+    }
+    //list of best graphs
+    if (strncmp(streamS,"A",1)!=0 && strncmp(streamS,"T",1)!=0 && strncmp(streamS,"B",1)!=0) {
+        free(streamS);
+        //should remove ??
+    }
+    else if(strncmp(streamS,"AggiungiGrafo\n",2)==0) {
+        free(streamS);
+        //allocates memory for adjacency matrix
+        arr = (unsigned long *)malloc(parsedInt[0] *parsedInt[0]* sizeof(unsigned long));
+        int k,y,w;
+        for(k=0;k<parsedInt[0];k++){
+            //allocates memory for a row of numbers
+            numbers = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[0]);
+            //initialize to 0
+            for(w=0;w<parsedInt[0];w++){
+                *(numbers+w)=0;
+            }
+            //reads input and parse
+            //free(streamS);
+            streamS = (char*) malloc((sizeof(unsigned long) * 3*parsedInt[1]));
+            streamS = fgets(streamS,(sizeof(unsigned long) * 3*parsedInt[1]),stdin);//inputString(parsedInt[0]);
+            parser(streamS,value,numbers);
+            free(streamS);
+            //copy parsed values in matrix
+            for(y=0;y<parsedInt[0];y++){
+                *(arr+k*parsedInt[0]+y)=numbers[y];
+            }
+            free(numbers);
+        }
+        //apply dijsktra algorithm
+        unsigned long value;
+        value=dijkstra(arr,parsedInt[0]);
+        free(arr);
+        //memorize first k graphs with their score
+        if(graphCount<parsedInt[1]){
+            *(list+graphCount)=graphCount;
+            *(list+graphCount+parsedInt[1])=value;
+        }
+        //replace if better score (if even leave oldest)
+        else{
+            int II;
+            for(II=0;II<parsedInt[1];II++){
+                if(*(list+II+parsedInt[1])>value){
+                    *(list+II)=graphCount;
+                    *(list+II+parsedInt[1])=value;
+                    break;
+                }
+            }
+        }
+        graphCount++;
+    } else if (strncmp(streamS, "TopK\n",2)==0) {
+        free(streamS);
+        int IV;
+        for(IV=0;IV<parsedInt[1];IV++){
+            if(*(list+IV)!=-1)printf("\n%lu\n",*(list+IV));
+        }
+        //do stuff
+
+    }
+    //if(returning==1){
+        //free(streamS);
+        //free(list);
+        //free(parsedInt);
+        //return 0;
+
+}
+    free(list);
+    free(parsedInt);
+    return 0;
+}
+
+char *inputString(int multiply){
+    char *buffer=NULL;
+    buffer = (char*) malloc((sizeof(unsigned long) * 3*multiply)); // allocate buffer.
+    buffer = fgets(buffer,(sizeof(unsigned long) * 3*multiply),stdin);
+    return buffer;
+}
+
+unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnValues){
+    //reads char, assemble number
+    int inCount=0,lengthNum=0,k,numOfReturn=0;
+    //initializes value for parsing
     while(1){
         switch(stream[inCount]){
             case '\n':
@@ -227,7 +228,6 @@ unsigned long dijkstra(unsigned long *graph,int nodeNumber){
     unsigned long sum=0;
     unsigned long row=0;
     unsigned long closedCount=0;
-    unsigned long column;
     unsigned long min=4294967295;
     unsigned long *costs = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
     unsigned long *nodeCache = (unsigned long *)malloc(sizeof (unsigned long)*nodeNumber);
@@ -235,7 +235,6 @@ unsigned long dijkstra(unsigned long *graph,int nodeNumber){
     while(closedCount<nodeNumber){
         //while not finished...
         for(I=0;I<nodeNumber;I++){
-            printf("\nrow %lu\n",row);
             if(row==I){
                 if(closedCount==0)*(costs+I)=*(graph+I);//Initialize costs
                 else{ //Update costs if shorter paths are found (0 counts as infinite, so always update when 0)
@@ -260,8 +259,6 @@ unsigned long dijkstra(unsigned long *graph,int nodeNumber){
                     else if(*(graph+row*nodeNumber+I)==0) *(costs+I)=sum+*(graph+row*nodeNumber+I);
                 }
             }
-            printf("min %lu\n",min);
-            printf("bh %lu\n",*(costs+I));
         }
             //min=100000;
             //save node and update row when current row is finished
