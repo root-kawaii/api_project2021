@@ -7,6 +7,11 @@ typedef struct{
     unsigned long value;
 }graphy;
 
+typedef struct{
+    unsigned long id;
+    struct nodeList *next;
+}nodeList;
+
 //#define CUR_MAX 4294967295
 
 //char *inputChar();
@@ -18,6 +23,11 @@ void maxheapify(graphy A[],int length,int position);
 void deleteMax(graphy A[],int length);
 void insert(graphy A[],int length,unsigned long value,unsigned long id);
 void buildMaxheapify(graphy A[],int length);
+unsigned long dijkstra3(unsigned long *graph,int nodeNumber);
+int minDistance(unsigned long dist[], int nodes[],int nodeNumber,int current,unsigned long *graph);
+unsigned long dijkstra2(unsigned long *graph,int nodeNumber,unsigned long costs[],unsigned long nodeCache[]);
+unsigned long powers[12]={
+        1,10,100,1000,10000,100000,1000000,10000000,100000000,100000000,1000000000,10000000000};
 
 int main() {
     //initialize values for parsing and d,k parameters
@@ -60,10 +70,10 @@ int main() {
     //arr = (unsigned long *)malloc(parsedInt[0] *parsedInt[0]* sizeof(unsigned long));
     unsigned long numbers[parsedInt[0]];
     //numbers = (unsigned long*) malloc(sizeof(unsigned long) * parsedInt[0]);
-    unsigned long costs[parsedInt[0]];
-    unsigned long nodeCache[parsedInt[0]];
+    //unsigned long costs[parsedInt[0]];
+    //unsigned long nodeCache[parsedInt[0]];
     int done=0;
-    unsigned long test[35];
+    //unsigned long test[35];
 
     while (fgets(input, (sizeof(char) * 20), stdin) != NULL){
         //streamS = fgets(streamS,(sizeof(unsigned long) * 3*1),stdin);
@@ -95,8 +105,7 @@ int main() {
             }
             //apply dijsktra algorithm
             unsigned long valueD;
-            valueD=dijkstra(arr,parsedInt[0],costs,nodeCache);
-            test[graphCount]=valueD;
+            valueD=dijkstra3(arr,parsedInt[0]);
             if(graphCount<parsedInt[1]){
                 list[graphCount].value=valueD;
                 list[graphCount].id=graphCount;
@@ -121,37 +130,19 @@ int main() {
             if(graphCount<parsedInt[1])checks = graphCount;
             else checks =parsedInt[1];
             for(IV=0;IV<checks-1;IV++){
-                    printf("%lu ",list[IV].id);
+                    if(list[IV].id!=-1)printf("%lu ",list[IV].id);
                     //printf("%lu ",list[IV].value);
             }
-            printf("%lu",list[IV].id);
+            if(list[IV].id!=-1)printf("%lu",list[IV].id);
             printf("\n");
             //IV++;
             //if(*(list+IV)!=-1)printf("%lu\n",*(list+IV));
             //do stuff
 
         }
-        //if(returning==1){
-            //free(streamS);
-            //free(list);
-            //free(parsedInt);
-            //return 0;
-
     }
-    //free(list);
-    //free(parsedInt);
     free(stream);
-    //free(streamS);
-    //free(input);
-    //free(arr);
     return 0;
-}
-
-char *inputString(int multiply){
-    char *buffer=NULL;
-    buffer = (char*) malloc((sizeof(unsigned long) * 3*multiply)); // allocate buffer.
-    buffer = fgets(buffer,(sizeof(unsigned long) * 3*multiply),stdin);
-    return buffer;
 }
 
 unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnValues){
@@ -163,7 +154,7 @@ unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnVal
             case '\n':
                 //done reading parse last number
                 for(k=0;k<lengthNum;k++){
-                    returnValues[numOfReturn]+=value[k]*power(10,lengthNum-k-1);
+                    returnValues[numOfReturn]+=value[k]*powers[lengthNum-k-1];
                     //printf("\n%lu\n", returnValues[numOfReturn]);
                 }
                 lengthNum=0;
@@ -173,7 +164,7 @@ unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnVal
             case ',':
                 //parse last read number
                 for(k=0;k<lengthNum;k++){
-                    returnValues[numOfReturn]+=value[k]*power(10,lengthNum-k-1);
+                    returnValues[numOfReturn]+=value[k]*powers[lengthNum-k-1];
                 }
                 lengthNum=0;
                 numOfReturn++;
@@ -181,7 +172,7 @@ unsigned long *parser(char *stream,unsigned long *value,unsigned long *returnVal
             case ' ':
                     //parse last read number
                 for(k=0;k<lengthNum;k++){
-                    returnValues[numOfReturn]+=value[k]*power(10,lengthNum-k-1);
+                    returnValues[numOfReturn]+=value[k]*powers[lengthNum-k-1];
                 }
                 lengthNum=0;
                 numOfReturn++;
@@ -386,66 +377,110 @@ void insert(graphy A[],int length,unsigned long value,unsigned long id){
 }
 
 unsigned long dijkstra2(unsigned long *graph,int nodeNumber,unsigned long costs[],unsigned long nodeCache[]){
-    unsigned long dist[nodeNumber],prev[nodeNumber],nodes[nodeNumber];
-    int I,II,III,IV;
-    int u=4294967295;
-    int closedNum=0;
+    unsigned long dist[nodeNumber],nodes[nodeNumber];
+    int current=0;
+    int queueCount=0,position=0;
+    int queue[nodeNumber*2];
+    unsigned long I,II,IV;
+    unsigned long premin=4294967295;
+    unsigned long check=0;
+    unsigned long u=4294967295;
+    unsigned long closedNum=0;
     int alt=0;
-    int min=4294967295;
-    for(I=0;I<nodeNumber;I++){
-        dist[I]=*(graph+I);
-    }
+    unsigned long min=4294967295;
     for(II=0;II<nodeNumber;II++){
-        prev[II]=-1;
+        nodes[II]=0;
+        queue[II]=-1;
+        queue[1+II]=-1;
+        dist[II]=*(graph+II);
     }
-    for(III=0;III<nodeNumber;III++){
-        nodes[III]=0;
-    }
-    //dist[0]=0;
-    while(nodes[0]==0){
-        for(I=0;I<nodeNumber;I++){
-            if(min > dist[I] && dist[I]!=0){
-                min = dist[I];
-                u=I;
-            }
+    queue[2*nodeNumber-2]=-1;
+    queue[2*nodeNumber-1]=-1;
+    for(IV=1;IV<nodeNumber;IV++){
+        if(premin > dist[IV] && dist[IV]!=0){
+            current=IV;
+            premin=dist[IV];
         }
-        nodes[u]=1;
-        closedNum++;
-        if(u==4294967295)break;
-        for(IV=0;IV<nodeNumber;IV++){
-            if(*(graph+(u*nodeNumber)+IV)!=0){
-                alt=dist[u]+*(graph+(u*nodeNumber)+IV);
-                if(alt<dist[IV]){
-                    dist[IV]=alt;
-                    prev[IV] = u;
-                    //riordina
+    }
+    queue[2*nodeNumber-1]=-1;
+    dist[0]=0;
+    nodes[0]=1;
+    while(check==0){
+        //queue not empty){
+        for(I=1;I<nodeNumber;I++){
+            if(*(graph+(current*nodeNumber)+I)!=0 && I!=current && nodes[I]==0){
+                queue[queueCount]=I;
+                queueCount++;
+                if(min > *(graph+(current*nodeNumber)+I)+dist[current]){
+                    min = *(graph+(current*nodeNumber)+I)+dist[current];
+                    u=I;
+                    position=queueCount-1;
                 }
             }
         }
-        int sum,V;
+        //queue[u]=1;
+        //if(u==4294967295)break;
+        for(IV=1;IV<nodeNumber;IV++){
+            if(*(graph+(current*nodeNumber)+IV)!=0){
+                alt=dist[current]+*(graph+(current*nodeNumber)+IV);
+                if(alt<dist[IV] || dist[IV]==0){
+                    dist[IV]=alt;
+                    //riordina
+                    queue[queueCount++]=IV;
+                    queueCount++;
+                    nodes[IV]=0;
+                }
+            }
+        }
+        //queue[checks]=-1;
+        //current=queue[queueCount];
+        //queue[queueCount]=-1;
+        nodes[current]=1;
+        if(u!=4294967295){
+            current=u;
+            queue[position]=-1;
+        }
+        else{
+            current=queue[queueCount];
+            queue[queueCount]=-1;
+        }
+        queueCount--;
+        closedNum++;
+        check=1;
+        for(int checkCount=0;checkCount<nodeNumber;checkCount++){
+            if(queue[checkCount]!=-1) {
+                check = 0;
+                break;
+            }
+        }
+        u=4294967295;
+    }
+        int sum=0,V;
         for(V=0;V<nodeNumber;V++){
             sum+=dist[V];
         }
         return sum;
-    }
+
 }
 
 
-    int minDistance(int dist[], int nodes[],int nodeNumber){
+int minDistance(unsigned long dist[], int nodes[],int nodeNumber,int current,unsigned long *graph){
         // Initialize min value
-        int min = 4294967295, min_index;
+        int min = 4294967294, min_index=-1;
 
-        for (int v = 0; v < nodeNumber; v++)
-            if (nodes[v] == 0 && dist[v] <= min)
-                min = dist[v], min_index = v;
-
+        for (int v = 0; v < nodeNumber; v++){
+            if (*(nodes+v) == 0 && dist[v]+*(graph+(current*nodeNumber)+v) <= min && *(graph+(current*nodeNumber)+v)!=0 && v!=current){
+                min = dist[v];
+                min_index = v;
+            }
+        }
             return min_index;
     }
 
 
-    void dijkstra3(unsigned long *graph,int nodeNumber){
-        int i;
-        int dist[nodeNumber]; // The output array.  dist[i] will hold the shortest
+    unsigned long dijkstra3(unsigned long *graph,int nodeNumber){
+        int check=0;
+        unsigned long dist[nodeNumber]; // The output array.  dist[i] will hold the shortest
         // distance from src to i
 
         int nodes[nodeNumber]; // sptSet[i] will be true if vertex i is included in shortest
@@ -453,35 +488,50 @@ unsigned long dijkstra2(unsigned long *graph,int nodeNumber,unsigned long costs[
 
         // Initialize all distances as INFINITE and stpSet[] as false
         for (int i = 0; i < nodeNumber; i++)
-            dist[i] = 4294967295, nodes[i] = 0;
+            dist[i]=*(graph+i), nodes[i] = 0;
 
         // Distance of source vertex from itself is always 0
-        dist[0] = *(graph);
+        dist[0] = 0;
+        nodes[0] = 1;
+        int current=0;
 
         // Find shortest path for all vertices
-        int count;
-        for (int count = 0; count < nodeNumber - 1; count++) {
+        while(check==0){
             // Pick the minimum distance vertex from the set of vertices not
             // yet processed. u is always equal to src in the first iteration.
-            int u = minDistance(dist, nodes,nodeNumber);
-
+            int u = minDistance(dist, nodes,nodeNumber,current,graph);
+            if(u==-1){
+                for(int i = 0; i < nodeNumber; i++){
+                    check=1;
+                    if(nodes[i]!=1 && dist[i]!=0){
+                        u=i;
+                        check=0;
+                        break;
+                    }
+                }
+            }
+            current=u;
             // Mark the picked vertex as processed
             nodes[u] = 1;
 
             // Update dist value of the adjacent vertices of the picked vertex.
-            int v;
             for (int v = 0; v < nodeNumber; v++)
 
                 // Update dist[v] only if is not in sptSet, there is an edge from
                 // u to v, and total weight of path from src to  v through u is
                 // smaller than current value of dist[v]
-                if (!nodes[v] && *(graph+(nodeNumber*v)+u) && dist[u] != 4294967295
-                && dist[u] + *(graph+(nodeNumber*v)+u) < dist[v])
-                    dist[v] = dist[u] + *(graph+(nodeNumber*v)+u);
+                if ((nodes[v]==0 && *(graph+(nodeNumber*u)+v) !=0 && (dist[u] != 4294967295)
+                && (dist[u] + *(graph+(nodeNumber*u)+v) < dist[v])) || (nodes[v]==0 && *(graph+(nodeNumber*u)+v)!=0 && dist[u] != 4294967295
+                && dist[v]==0))
+                    dist[v] = dist[u] + *(graph+(nodeNumber*u)+v);
         }
+        int sum=0,V;
+        for(V=0;V<nodeNumber;V++){
+            sum+=dist[V];
+        }
+        return sum;
     }
 
 
 
 
-}
