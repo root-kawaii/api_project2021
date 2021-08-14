@@ -9,8 +9,6 @@
 /home/daemonex/Desktop/exams/api_project/main.c
 stdio.h
 -
-malloc.h
--
 string.h
 -
 
