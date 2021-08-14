@@ -1,30 +1,30 @@
 #include <stdio.h>
 //#include <malloc.h>
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct{
-    unsigned long id;
-    unsigned long value;
+    int id;
+    int value;
 }graphy;
 
 //#define CUR_MAX 4294967295
 
-unsigned long *parser(const char *stream,unsigned long *value,unsigned long *returnValues,unsigned long *graph,unsigned long w,unsigned long nodes);
-unsigned long *parser2(const char *stream,unsigned long *value,unsigned long *returnValues,unsigned long *graph,unsigned long w,unsigned long nodes);
+int *parser(const char *stream,int *value,int *returnValues,int *graph,int w,int nodes);
 void maxheapify(graphy A[],int position,int length);
 void deleteMax(graphy A[],int length);
-void insert(graphy A[],int length,unsigned long value,unsigned long id);
+void insert(graphy A[],int length,int value,int id);
 void buildMaxheapify(graphy A[],int length);
-unsigned long dijkstra3(unsigned long *graph,unsigned long nodeNumber);
-int minDistance(const unsigned long dist[], const int nodes[],unsigned  long nodeNumber,int current,const unsigned long *graph);
-unsigned long powers[12]={
-        1,10,100,1000,10000,100000,1000000,10000000,100000000,100000000,1000000000,10000000000};
+int dijkstra3(int *graph,int nodeNumber);
+int minDistance(const int dist[], const int nodes[],int nodeNumber,int current,const int *graph);
+int powers[12]={
+        1,10,100,1000,10000,100000,1000000,10000000,100000000,100000000,1000000000};
 
 int main() {
     //initialize values for parsing and d,k parameters
-    unsigned long value[11]={0};
-    unsigned long parsedInt[2]={0};
-    unsigned long graphCount=0;
+    int value[11]={0};
+    int parsedInt[2]={0};
+    int graphCount=0;
     char streamS[30];
     char *x;
     x=fgets(streamS,(sizeof(char) * 30),stdin);
@@ -35,11 +35,11 @@ int main() {
     list[0].value=-1;
     char stream[4000];
     char input[20];
-    unsigned long arr[parsedInt[0]*parsedInt[0]];
-    unsigned long numbers[parsedInt[0]];
+    int arr[parsedInt[0]*parsedInt[0]];
+    int numbers[parsedInt[0]];
     int done=0;
     int IV;
-    unsigned long checks;
+    int checks;
 
     while (fgets(input, (sizeof(char) * 20), stdin) != NULL){
         //list of best graphs
@@ -49,13 +49,13 @@ int main() {
             for(k=0;k<parsedInt[0];k++){
                 //allocates memory for a row of numbers
                 //reads input and parse
-                x = fgets(stream,(int)(sizeof(unsigned long) * 3*parsedInt[0]),stdin);//inputString(parsedInt[0]);
+                x = fgets(stream,(int)(sizeof(int) * 3*parsedInt[0]),stdin);//inputString(parsedInt[0]);
                 if(x);
                 parser(stream,value,numbers,arr,k,parsedInt[0]);
                 //copy parsed values in matrix
             }
             //apply dijsktra algorithm
-            unsigned long valueD;
+            int valueD;
             valueD=dijkstra3(arr,parsedInt[0]);
             if(graphCount<parsedInt[1]){
                 list[graphCount].value=valueD;
@@ -86,12 +86,14 @@ int main() {
             }
             else{
                 for(IV=0;IV<checks-1;IV++){
-                    //printf("%lu",list[IV].id);
-                    //printf(" ");
-                //printf("%lu ",list[IV].value);
+                    printf("%d",list[IV].id);
+                    printf(" ");
+
                 }
-                printf("17 18 24 7 11 5 9 4 10 25");
+                printf("%d",list[IV].id);
                 printf("\n");
+                //printf("%lu\n",list[IV].id);
+                //printf("\n");
             //printf(" %lu ",list[IV].value);
             //if(list[IV].id!=-1)printf("\n");
             }
@@ -100,7 +102,7 @@ int main() {
     return 0;
 }
 
-unsigned long *parser(const char *stream,unsigned long *value,unsigned long *returnValues,unsigned long *graph,unsigned long w,unsigned long nodes){
+int *parser(const char *stream,int *value,int *returnValues,int *graph,int w,int nodes){
     //reads char, assemble number
     int inCount=0,lengthNum=0,k,numOfReturn=0;
     //initializes value for parsing
@@ -180,7 +182,7 @@ void deleteMax(graphy A[],int length){
     maxheapify(A,0,length);
 }
 
-void insert(graphy A[],int length,unsigned long value,unsigned long id){
+void insert(graphy A[],int length,int value,int id){
     int I;
     graphy dummy;
     length=length+1;
@@ -197,9 +199,9 @@ void insert(graphy A[],int length,unsigned long value,unsigned long id){
 
 
 
-int minDistance(const unsigned long dist[], const int nodes[],unsigned long nodeNumber,int current,const unsigned long *graph){
+int minDistance(const int dist[], const int nodes[],int nodeNumber,int current,const int *graph){
         // Initialize min value
-        unsigned long min = 4294967294;
+        int min = 2147483647;
         int min_index=-1;
 
         for (int v = 1; v < nodeNumber; v++){
@@ -212,9 +214,9 @@ int minDistance(const unsigned long dist[], const int nodes[],unsigned long node
     }
 
 
-    unsigned long dijkstra3(unsigned long *graph,unsigned long nodeNumber){
+    int dijkstra3(int *graph,int nodeNumber){
         int check=0;
-        unsigned long dist[nodeNumber]; // The output array.  dist[i] will hold the shortest
+        int dist[nodeNumber]; // The output array.  dist[i] will hold the shortest
         // distance from src to i
 
         int nodes[nodeNumber]; // sptSet[i] will be true if vertex i is included in shortest
@@ -265,7 +267,7 @@ int minDistance(const unsigned long dist[], const int nodes[],unsigned long node
                 && dist[v]==0))
                     dist[v] = dist[u] + *(graph+(nodeNumber*u)+v);
         }
-        unsigned long sum=0,V;
+        int sum=0,V;
         for(V=0;V<nodeNumber;V++){
             sum+=dist[V];
         }
