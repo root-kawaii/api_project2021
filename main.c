@@ -1,14 +1,10 @@
 #include <stdio.h>
-//#include <malloc.h>
 #include <string.h>
-#include <stdlib.h>
 
 typedef struct{
     int id;
     int value;
 }graphy;
-
-//#define CUR_MAX 4294967295
 
 int *parser(const char *stream,int *value,int *returnValues,int *graph,int w,int nodes);
 void maxheapify(graphy A[],int position,int length);
@@ -16,7 +12,7 @@ void deleteMax(graphy A[],int length);
 void insert(graphy A[],int length,int value,int id);
 void buildMaxheapify(graphy A[],int length);
 int dijkstra3(int *graph,int nodeNumber);
-int minDistance(const int dist[], const int nodes[],int nodeNumber,int current,const int *graph);
+int nextNode(const int *graph,const int dist[], const int nodes[],int nodeNumber,int current);
 int powers[12]={
         1,10,100,1000,10000,100000,1000000,10000000,100000000,100000000,1000000000};
 
@@ -92,10 +88,6 @@ int main() {
                 }
                 printf("%d",list[IV].id);
                 printf("\n");
-                //printf("%lu\n",list[IV].id);
-                //printf("\n");
-            //printf(" %lu ",list[IV].value);
-            //if(list[IV].id!=-1)printf("\n");
             }
         }
     }
@@ -197,36 +189,27 @@ void insert(graphy A[],int length,int value,int id){
     }
 }
 
-
-
-int minDistance(const int dist[], const int nodes[],int nodeNumber,int current,const int *graph){
-        // Initialize min value
-        int min = 2147483647;
-        int min_index=-1;
-
-        for (int v = 1; v < nodeNumber; v++){
-            if (*(nodes+v) == 0 && dist[v] <= min && *(graph+(current*nodeNumber)+v)!=0 && v!=current){
-                min = dist[v];
-                min_index = v;
+int nextNode(const int *graph,const int dist[], const int nodes[],int nodeNumber,int current){
+    int position=-1;
+    int min = 2147483647;
+        for(int j = 1; j < nodeNumber; j++){
+            if (*(nodes+j) == 0 && dist[j] <= min && *(graph+(current*nodeNumber)+j)!=0 && j!=current){
+                min = dist[j];
+                position = j;
             }
         }
-            return min_index;
+            return position;
     }
-
 
     int dijkstra3(int *graph,int nodeNumber){
         int check=0;
-        int dist[nodeNumber]; // The output array.  dist[i] will hold the shortest
-        // distance from src to i
+        int dist[nodeNumber];
+        int nodes[nodeNumber];
 
-        int nodes[nodeNumber]; // sptSet[i] will be true if vertex i is included in shortest
-        // path tree or shortest distance from src to i is finalized
-
-        // Initialize all distances as INFINITE and stpSet[] as false
-        for (int i = 0; i < nodeNumber; i++)
-            dist[i]=*(graph+i), nodes[i] = 0;
-
-        // Distance of source vertex from itself is always 0
+        for (int i = 0; i < nodeNumber; i++){
+            dist[i]=*(graph+i);
+            nodes[i] = 0;
+        }
         dist[0] = 0;
         int allZero=0;
         for (int i = 0; i < nodeNumber; i++){
@@ -235,37 +218,27 @@ int minDistance(const int dist[], const int nodes[],int nodeNumber,int current,c
         if(allZero==0) return 0;
         nodes[0] = 1;
         int current=0;
-
-        // Find shortest path for all vertices
         while(check==0){
-            // Pick the minimum distance vertex from the set of vertices not
-            // yet processed. u is always equal to src in the first iteration.
-            int u = minDistance(dist, nodes,nodeNumber,current,graph);
-            if(u==-1){
+            int position = nextNode(graph,dist, nodes,nodeNumber,current);
+            if(position==-1){
                 for(int i = 0; i < nodeNumber; i++){
                     check=1;
                     if(nodes[i]!=1 && dist[i]!=0){
-                        u=i;
+                        position=i;
                         check=0;
                         break;
                     }
                 }
             }
             if(check==1)break;
-            current=u;
-            // Mark the picked vertex as processed
-            nodes[u] = 1;
-
-            // Update dist value of the adjacent vertices of the picked vertex.
-            for (int v = 1; v < nodeNumber; v++)
-
-                // Update dist[v] only if is not in sptSet, there is an edge from
-                // u to v, and total weight of path from src to  v through u is
-                // smaller than current value of dist[v]
-                if ((nodes[v]==0 && *(graph+(nodeNumber*u)+v) !=0
-                && (dist[u] + *(graph+(nodeNumber*u)+v) < dist[v])) || (nodes[v]==0 && *(graph+(nodeNumber*u)+v)!=0 && dist[u] != 4294967295
-                && dist[v]==0))
-                    dist[v] = dist[u] + *(graph+(nodeNumber*u)+v);
+            current=position;
+            nodes[position] = 1;
+            for (int j = 1; j < nodeNumber; j++){
+                if ((nodes[j]==0 && *(graph+(nodeNumber*position)+j)!=0 && dist[position] != 2147483647
+                && dist[j]==0) || (nodes[j]==0 && *(graph+(nodeNumber*position)+j) !=0
+                && (dist[position] + *(graph+(nodeNumber*position)+j) < dist[j])))
+                    dist[j] = dist[position] + *(graph+(nodeNumber*position)+j);
+            }
         }
         int sum=0,V;
         for(V=0;V<nodeNumber;V++){
