@@ -12,6 +12,7 @@ void deleteMax(graphy A[],int length);
 void insert(graphy A[],int length,int value,int id);
 void buildMaxheapify(graphy A[],int length);
 int dijkstra3(int *graph,int nodeNumber);
+int dijkstra_pepe_hands(int *graph,int nodeNumber);
 int nextNode(const int *graph,const int dist[], const int nodes[],int nodeNumber,int current);
 int powers[12]={
         1,10,100,1000,10000,100000,1000000,10000000,100000000,100000000,1000000000};
@@ -52,7 +53,7 @@ int main() {
             }
             //apply dijsktra algorithm
             int valueD;
-            valueD=dijkstra3(arr,parsedInt[0]);
+            valueD=dijkstra_pepe_hands(arr,parsedInt[0]);
             if(graphCount<parsedInt[1]){
                 list[graphCount].value=valueD;
                 list[graphCount].id=graphCount;
@@ -189,63 +190,59 @@ void insert(graphy A[],int length,int value,int id){
     }
 }
 
-int nextNode(const int *graph,const int dist[], const int nodes[],int nodeNumber,int current){
-    int position=-1;
+    int dijkstra_pepe_hands(int *graph,int nodeNumber){
+
+    int nodes[nodeNumber];
+    int dist[nodeNumber];
     int min = 2147483647;
+    int empty_queue=0;
+    int unreachable_nodes=0;
+    int curr=0;
+    dist[0] = 0;
+
+    for (int i = 1; i < nodeNumber; i++){
+        dist[i]=*(graph+i);
+        nodes[i] = 0;
+        if(dist[i]!=0) unreachable_nodes=1;
+    }
+    if(unreachable_nodes==0)return 0;
+
+    while(empty_queue==0){
+        int position = -1;
+        min = 2147483647;
         for(int j = 1; j < nodeNumber; j++){
-            if (*(nodes+j) == 0 && dist[j] <= min && *(graph+(current*nodeNumber)+j)!=0 && j!=current){
+            if (*(nodes+j) == 0 && dist[j] <= min && *(graph+(curr*nodeNumber)+j)!=0 && j!=curr){
                 min = dist[j];
                 position = j;
             }
         }
-            return position;
-    }
-
-    int dijkstra3(int *graph,int nodeNumber){
-        int check=0;
-        int dist[nodeNumber];
-        int nodes[nodeNumber];
-
-        for (int i = 0; i < nodeNumber; i++){
-            dist[i]=*(graph+i);
-            nodes[i] = 0;
-        }
-        dist[0] = 0;
-        int allZero=0;
-        for (int i = 0; i < nodeNumber; i++){
-            if(dist[i]!=0) allZero=1;
-        }
-        if(allZero==0) return 0;
-        nodes[0] = 1;
-        int current=0;
-        while(check==0){
-            int position = nextNode(graph,dist, nodes,nodeNumber,current);
-            if(position==-1){
-                for(int i = 0; i < nodeNumber; i++){
-                    check=1;
-                    if(nodes[i]!=1 && dist[i]!=0){
-                        position=i;
-                        check=0;
-                        break;
-                    }
+        if(position==-1){
+            for(int i = 0; i < nodeNumber; i++){
+                empty_queue=1;
+                if(nodes[i]!=1 && dist[i]!=0){
+                    position=i;
+                    empty_queue=0;
+                    break;
                 }
             }
-            if(check==1)break;
-            current=position;
-            nodes[position] = 1;
-            for (int j = 1; j < nodeNumber; j++){
-                if ((nodes[j]==0 && *(graph+(nodeNumber*position)+j)!=0 && dist[position] != 2147483647
-                && dist[j]==0) || (nodes[j]==0 && *(graph+(nodeNumber*position)+j) !=0
-                && (dist[position] + *(graph+(nodeNumber*position)+j) < dist[j])))
-                    dist[j] = dist[position] + *(graph+(nodeNumber*position)+j);
+        }
+        if(empty_queue==1)break;
+        curr=position;
+        nodes[position] = 1;
+        for (int j = 1; j < nodeNumber; j++){
+            if ((*(graph+(nodeNumber*position)+j)!=0 && dist[j]==0)
+            || (*(graph+(nodeNumber*position)+j) !=0 && (dist[position] + *(graph+(nodeNumber*position)+j) < dist[j]))){
+                dist[j] = dist[position] + *(graph+(nodeNumber*position)+j);
             }
         }
-        int sum=0,V;
-        for(V=0;V<nodeNumber;V++){
-            sum+=dist[V];
-        }
-        return sum;
     }
+    int sum=0,V;
+    for(V=0;V<nodeNumber;V++){
+        sum+=dist[V];
+    }
+    return sum;
+}
+
 
 
 
